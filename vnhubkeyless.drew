@@ -1,0 +1,397 @@
+-- [[ VN Hub - Modern Glassmorphism Key System ]] --
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+
+-- Cấu hình hệ thống
+local CORRECT_KEY = "VNHubKeyUibKskskwoowKapwpwkwnwkMskwkwjwo"
+local KEY_LINK = "https://link4m.org/JjGGH9J" -- Link Get Key mới
+local SCRIPT_URL = "https://auradt.site/script=vnhub.lua"
+local SAVE_FILE = "VNHub_SavedAuth.json"
+local CACHE_DURATION = 86400 -- Lưu ngầm 24 giờ (hoàn toàn ẩn trên menu)
+
+-- Hàm chạy Script chính
+local function loadMainScript()
+    pcall(function()
+        loadstring(game:HttpGet(SCRIPT_URL))()
+    end)
+end
+
+-- Kiểm tra lưu key ngầm 24 giờ
+local function checkSavedKey()
+    if isfile and readfile and isfile(SAVE_FILE) then
+        local success, data = pcall(function()
+            return HttpService:JSONDecode(readfile(SAVE_FILE))
+        end)
+        if success and data and data.key == CORRECT_KEY and data.timestamp then
+            if (os.time() - data.timestamp) < CACHE_DURATION then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function saveKeySilently()
+    if writefile then
+        pcall(function()
+            local payload = HttpService:JSONEncode({
+                key = CORRECT_KEY,
+                timestamp = os.time()
+            })
+            writefile(SAVE_FILE, payload)
+        end)
+    end
+end
+
+if checkSavedKey() then
+    loadMainScript()
+    return
+end
+
+-- Xóa UI cũ nếu tồn tại
+if CoreGui:FindFirstChild("VNHub_KeyUI") then
+    CoreGui.VNHub_KeyUI:Destroy()
+end
+
+-- Khởi tạo ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "VNHub_KeyUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+
+-- Khung chính
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 22, 42)
+MainFrame.BackgroundTransparency = 0.22
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.Size = UDim2.new(0, 400, 0, 240)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 16)
+MainCorner.Parent = MainFrame
+
+-- Hiệu ứng chuyển sắc nền (Blue Glass Gradient)
+local BgGradient = Instance.new("UIGradient")
+BgGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(18, 45, 85)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(10, 24, 48)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(6, 15, 32))
+})
+BgGradient.Rotation = 135
+BgGradient.Parent = MainFrame
+
+-- Viền sáng xanh Cyan
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Thickness = 1.6
+MainStroke.Transparency = 0.25
+MainStroke.Color = Color3.fromRGB(56, 189, 248)
+MainStroke.Parent = MainFrame
+
+local StrokeGradient = Instance.new("UIGradient")
+StrokeGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(56, 189, 248)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(14, 165, 233)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(99, 102, 241))
+})
+StrokeGradient.Rotation = 45
+StrokeGradient.Parent = MainStroke
+
+-- Thanh trang trí phát sáng trên đỉnh
+local TopGlow = Instance.new("Frame")
+TopGlow.Name = "TopGlow"
+TopGlow.Parent = MainFrame
+TopGlow.AnchorPoint = Vector2.new(0.5, 0)
+TopGlow.BackgroundColor3 = Color3.fromRGB(56, 189, 248)
+TopGlow.BackgroundTransparency = 0.1
+TopGlow.BorderSizePixel = 0
+TopGlow.Position = UDim2.new(0.5, 0, 0, 0)
+TopGlow.Size = UDim2.new(0.45, 0, 0, 3)
+
+local GlowCorner = Instance.new("UICorner")
+GlowCorner.CornerRadius = UDim.new(1, 0)
+GlowCorner.Parent = TopGlow
+
+-- Tiêu đề "VN Hub"
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Name = "Title"
+TitleLabel.Parent = MainFrame
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Position = UDim2.new(0, 0, 0, 18)
+TitleLabel.Size = UDim2.new(1, 0, 0, 34)
+TitleLabel.Font = Enum.Font.FredokaOne
+TitleLabel.Text = "VN Hub"
+TitleLabel.TextColor3 = Color3.fromRGB(240, 249, 255)
+TitleLabel.TextSize = 28
+
+local TitleGradient = Instance.new("UIGradient")
+TitleGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(125, 211, 252))
+})
+TitleGradient.Rotation = 90
+TitleGradient.Parent = TitleLabel
+
+-- Phụ đề
+local SubtitleLabel = Instance.new("TextLabel")
+SubtitleLabel.Name = "Subtitle"
+SubtitleLabel.Parent = MainFrame
+SubtitleLabel.BackgroundTransparency = 1
+SubtitleLabel.Position = UDim2.new(0, 0, 0, 52)
+SubtitleLabel.Size = UDim2.new(1, 0, 0, 18)
+SubtitleLabel.Font = Enum.Font.GothamMedium
+SubtitleLabel.Text = "AUTHENTICATION REQUIRED"
+SubtitleLabel.TextColor3 = Color3.fromRGB(125, 211, 252)
+SubtitleLabel.TextTransparency = 0.25
+SubtitleLabel.TextSize = 11
+
+-- Khung chứa ô nhập Key
+local InputContainer = Instance.new("Frame")
+InputContainer.Name = "InputContainer"
+InputContainer.Parent = MainFrame
+InputContainer.AnchorPoint = Vector2.new(0.5, 0)
+InputContainer.BackgroundColor3 = Color3.fromRGB(8, 18, 36)
+InputContainer.BackgroundTransparency = 0.35
+InputContainer.Position = UDim2.new(0.5, 0, 0, 84)
+InputContainer.Size = UDim2.new(0.84, 0, 0, 44)
+
+local InputCorner = Instance.new("UICorner")
+InputCorner.CornerRadius = UDim.new(0, 10)
+InputCorner.Parent = InputContainer
+
+local InputStroke = Instance.new("UIStroke")
+InputStroke.Color = Color3.fromRGB(56, 189, 248)
+InputStroke.Transparency = 0.65
+InputStroke.Thickness = 1.2
+InputStroke.Parent = InputContainer
+
+local KeyBox = Instance.new("TextBox")
+KeyBox.Name = "KeyBox"
+KeyBox.Parent = InputContainer
+KeyBox.AnchorPoint = Vector2.new(0.5, 0.5)
+KeyBox.BackgroundTransparency = 1
+KeyBox.Position = UDim2.new(0.5, 0, 0.5, 0)
+KeyBox.Size = UDim2.new(0.92, 0, 0.85, 0)
+KeyBox.Font = Enum.Font.GothamMedium
+KeyBox.PlaceholderText = "Paste your key here..."
+KeyBox.PlaceholderColor3 = Color3.fromRGB(148, 163, 184)
+KeyBox.Text = ""
+KeyBox.TextColor3 = Color3.fromRGB(240, 249, 255)
+KeyBox.TextXAlignment = Enum.TextXAlignment.Center
+KeyBox.TextScaled = true
+KeyBox.ClearTextOnFocus = false
+
+local TextConstraint = Instance.new("UITextSizeConstraint")
+TextConstraint.MaxTextSize = 14
+TextConstraint.MinTextSize = 9
+TextConstraint.Parent = KeyBox
+
+-- Banner thông báo hiện đại trên menu
+local NotifyBanner = Instance.new("Frame")
+NotifyBanner.Name = "NotifyBanner"
+NotifyBanner.Parent = MainFrame
+NotifyBanner.AnchorPoint = Vector2.new(0.5, 0)
+NotifyBanner.BackgroundColor3 = Color3.fromRGB(15, 28, 48)
+NotifyBanner.BackgroundTransparency = 0.15
+NotifyBanner.Position = UDim2.new(0.5, 0, 0, 134)
+NotifyBanner.Size = UDim2.new(0.84, 0, 0, 26)
+NotifyBanner.Visible = false
+NotifyBanner.ClipsDescendants = true
+
+local NotifyCorner = Instance.new("UICorner")
+NotifyCorner.CornerRadius = UDim.new(0, 8)
+NotifyCorner.Parent = NotifyBanner
+
+local NotifyStroke = Instance.new("UIStroke")
+NotifyStroke.Color = Color3.fromRGB(248, 113, 113)
+NotifyStroke.Transparency = 0.3
+NotifyStroke.Thickness = 1
+NotifyStroke.Parent = NotifyBanner
+
+local NotifyText = Instance.new("TextLabel")
+NotifyText.Name = "NotifyText"
+NotifyText.Parent = NotifyBanner
+NotifyText.BackgroundTransparency = 1
+NotifyText.Position = UDim2.new(0, 0, 0, 0)
+NotifyText.Size = UDim2.new(1, 0, 1, 0)
+NotifyText.Font = Enum.Font.GothamBold
+NotifyText.Text = ""
+NotifyText.TextColor3 = Color3.fromRGB(248, 113, 113)
+NotifyText.TextSize = 11
+
+-- Nút Check Key
+local CheckBtn = Instance.new("TextButton")
+CheckBtn.Name = "CheckBtn"
+CheckBtn.Parent = MainFrame
+CheckBtn.BackgroundColor3 = Color3.fromRGB(14, 165, 233)
+CheckBtn.BackgroundTransparency = 0.1
+CheckBtn.Position = UDim2.new(0.08, 0, 0, 168)
+CheckBtn.Size = UDim2.new(0.40, 0, 0, 42)
+CheckBtn.Font = Enum.Font.GothamBold
+CheckBtn.Text = "Verify Key"
+CheckBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CheckBtn.TextSize = 14
+CheckBtn.AutoButtonColor = false
+
+local CheckCorner = Instance.new("UICorner")
+CheckCorner.CornerRadius = UDim.new(0, 10)
+CheckCorner.Parent = CheckBtn
+
+local CheckGradient = Instance.new("UIGradient")
+CheckGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(56, 189, 248)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(2, 132, 199))
+})
+CheckGradient.Rotation = 90
+CheckGradient.Parent = CheckBtn
+
+-- Nút Get Key
+local GetBtn = Instance.new("TextButton")
+GetBtn.Name = "GetBtn"
+GetBtn.Parent = MainFrame
+GetBtn.BackgroundColor3 = Color3.fromRGB(30, 58, 95)
+GetBtn.BackgroundTransparency = 0.35
+GetBtn.Position = UDim2.new(0.52, 0, 0, 168)
+GetBtn.Size = UDim2.new(0.40, 0, 0, 42)
+GetBtn.Font = Enum.Font.GothamBold
+GetBtn.Text = "Get Key"
+GetBtn.TextColor3 = Color3.fromRGB(224, 242, 254)
+GetBtn.TextSize = 14
+GetBtn.AutoButtonColor = false
+
+local GetCorner = Instance.new("UICorner")
+GetCorner.CornerRadius = UDim.new(0, 10)
+GetCorner.Parent = GetBtn
+
+local GetStroke = Instance.new("UIStroke")
+GetStroke.Color = Color3.fromRGB(56, 189, 248)
+GetStroke.Transparency = 0.5
+GetStroke.Thickness = 1.2
+GetStroke.Parent = GetBtn
+
+-- Hiệu ứng Hover cho nút
+local function addHoverEffect(button, normalTrans, hoverTrans)
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            BackgroundTransparency = hoverTrans
+        }):Play()
+    end)
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            BackgroundTransparency = normalTrans
+        }):Play()
+    end)
+end
+
+addHoverEffect(CheckBtn, 0.1, 0)
+addHoverEffect(GetBtn, 0.35, 0.15)
+
+-- Hiệu ứng Focus ô nhập Key
+KeyBox.Focused:Connect(function()
+    TweenService:Create(InputStroke, TweenInfo.new(0.25), {Transparency = 0.1, Thickness = 1.6}):Play()
+end)
+
+KeyBox.FocusLost:Connect(function()
+    TweenService:Create(InputStroke, TweenInfo.new(0.25), {Transparency = 0.65, Thickness = 1.2}):Play()
+end)
+
+-- Hiển thị thông báo dạng banner trượt mượt mà trên menu
+local function showNotification(message, isSuccess)
+    NotifyText.Text = message
+    if isSuccess then
+        NotifyStroke.Color = Color3.fromRGB(74, 222, 128)
+        NotifyText.TextColor3 = Color3.fromRGB(74, 222, 128)
+        NotifyBanner.BackgroundColor3 = Color3.fromRGB(10, 36, 24)
+    else
+        NotifyStroke.Color = Color3.fromRGB(248, 113, 113)
+        NotifyText.TextColor3 = Color3.fromRGB(248, 113, 113)
+        NotifyBanner.BackgroundColor3 = Color3.fromRGB(36, 15, 15)
+    end
+    
+    NotifyBanner.Size = UDim2.new(0.84, 0, 0, 0)
+    NotifyBanner.Visible = true
+    
+    TweenService:Create(NotifyBanner, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0.84, 0, 0, 26)
+    }):Play()
+end
+
+-- Hiệu ứng lắc giảm chấn siêu mượt khi nhập sai key
+local isShaking = false
+local function smoothShake()
+    if isShaking then return end
+    isShaking = true
+
+    local basePos = MainFrame.Position
+    local offsets = {10, -10, 7, -7, 4, -4, 1.5, -1.5, 0}
+
+    TweenService:Create(MainStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(248, 113, 113)}):Play()
+    TweenService:Create(InputStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(248, 113, 113), Transparency = 0.1}):Play()
+
+    for _, offset in ipairs(offsets) do
+        local tween = TweenService:Create(
+            MainFrame,
+            TweenInfo.new(0.038, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+            {Position = UDim2.new(basePos.X.Scale, basePos.X.Offset + offset, basePos.Y.Scale, basePos.Y.Offset)}
+        )
+        tween:Play()
+        tween.Completed:Wait()
+    end
+
+    MainFrame.Position = basePos
+
+    TweenService:Create(MainStroke, TweenInfo.new(0.35), {Color = Color3.fromRGB(56, 189, 248)}):Play()
+    TweenService:Create(InputStroke, TweenInfo.new(0.35), {Color = Color3.fromRGB(56, 189, 248), Transparency = 0.65}):Play()
+
+    isShaking = false
+end
+
+-- Hiệu ứng mở menu khi khởi động
+MainFrame.Size = UDim2.new(0, 360, 0, 215)
+MainFrame.BackgroundTransparency = 1
+TweenService:Create(MainFrame, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    Size = UDim2.new(0, 400, 0, 240),
+    BackgroundTransparency = 0.22
+}):Play()
+
+-- Xử lý Verify Key
+CheckBtn.MouseButton1Click:Connect(function()
+    local input = KeyBox.Text:gsub("%s+", "")
+    if input == CORRECT_KEY then
+        showNotification("✓ Key verified! Loading VN Hub...", true)
+        saveKeySilently() -- Lưu key ngầm 24 giờ
+
+        TweenService:Create(MainStroke, TweenInfo.new(0.25), {Color = Color3.fromRGB(74, 222, 128)}):Play()
+        task.wait(0.6)
+
+        local closeTween = TweenService:Create(MainFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 350, 0, 200),
+            BackgroundTransparency = 1
+        })
+        closeTween:Play()
+        closeTween.Completed:Wait()
+
+        ScreenGui:Destroy()
+        loadMainScript()
+    else
+        showNotification("⚠️ Invalid key! Please try again.", false)
+        KeyBox.Text = "" -- Tự động xóa chữ khi nhập sai
+        task.spawn(smoothShake)
+    end
+end)
+
+-- Xử lý Get Key
+GetBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard(KEY_LINK)
+        showNotification("🔗 Key link copied to clipboard!", true)
+    else
+        showNotification("⚠️ Executor doesn't support clipboard.", false)
+    end
+end)
